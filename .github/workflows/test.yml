@@ -1,0 +1,48 @@
+---
+name: Test
+"on":
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  vagrant:
+    name: Vagrant
+    runs-on: macos-12
+
+    env:
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+      VAGRANT_CWD: ${{ github.workspace }}/vagrant
+
+    steps:
+      - name: Check out the codebase
+        uses: actions/checkout@v2
+
+      - name: Install ansible
+        run: brew install ansible
+
+      - name: Install role dependencies
+        run: ansible-galaxy install -r collections/requirements.yml
+
+      - name: Configure VirtualBox
+        run: >-
+          sudo mkdir -p /etc/vbox &&
+          echo "* 192.168.30.0/24" | sudo tee -a /etc/vbox/networks.conf > /dev/null
+
+      - name: Create virtual machines
+        run: vagrant up
+
+      - name: Provision cluster using Ansible
+        # Since Ansible sets up _all_ machines, it is sufficient to run it only
+        # once (i.e, for a single node - we are choosing control1 here)
+        run: vagrant provision control1 --provision-with ansible
+
+      - name: Set up kubectl on the host
+        run: brew install kubectl &&
+          mkdir -p ~/.kube &&
+          vagrant ssh control1 --command "cat ~/.kube/config" > ~/.kube/config
+
+      - name: Destroy virtual machines
+        if: always() # do this even if a step before has failed
+        run: vagrant destroy --force
