@@ -1,6 +1,9 @@
 ---
 
 - name: Download k3s binary x64
+  register: result
+  until: result.dest
+  retries: 5
   get_url:
     url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
     checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
@@ -11,6 +14,9 @@
   when: ansible_facts.architecture == "x86_64"
 
 - name: Download k3s binary arm64
+  register: result
+  until: result.dest
+  retries: 5
   get_url:
     url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s-arm64
     checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-arm64.txt
@@ -24,6 +30,10 @@
       ansible_facts.architecture is search("aarch64")
 
 - name: Download k3s binary armhf
+  register: result
+  until: result.dest
+  retries: 5
+  delay: 10
   get_url:
     url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s-armhf
     checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-arm.txt
