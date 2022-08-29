@@ -36,6 +36,11 @@ class TestK3sCluster(unittest.TestCase):
         else:
             return None
 
+    def _debug_cmd(self, cmd) -> None:
+        print(f"--> {cmd}")
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        print(result.stdout.decode("utf-8"))
+
     def _apply_manifest(self, manifest_file: Path) -> dict:
         apply_result = self._kubectl(
             f'apply --filename="{manifest_file}" --cascade="background"'
@@ -98,10 +103,15 @@ class TestK3sCluster(unittest.TestCase):
         metallb_port = service["spec"]["ports"][0]["port"]
 
         def get_nginx_page():
+            self._debug_cmd(f"kubectl describe service nginx")
+            self._debug_cmd(f"ping -c 4 {metallb_ip}")
+            self._debug_cmd(f"traceroute {metallb_ip}")
+            self._debug_cmd(f'curl -vv "http://{metallb_ip}:{metallb_port}"')
+
             with urlopen(f"http://{metallb_ip}:{metallb_port}/", timeout=1) as response:
                 return response.read().decode("utf8")
 
-        response_body = self._retry(get_nginx_page)
+        response_body = self._retry(get_nginx_page, retries=10, seconds_between_retries=3)
         self.assertIn("Welcome to nginx!", response_body)
 
 
