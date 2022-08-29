@@ -103,9 +103,6 @@ class TestK3sCluster(unittest.TestCase):
         metallb_port = service["spec"]["ports"][0]["port"]
 
         def get_nginx_page():
-            self._debug_cmd(f"kubectl describe service nginx")
-            self._debug_cmd(f"ping -c 4 {metallb_ip}")
-            self._debug_cmd(f"traceroute {metallb_ip}")
             self._debug_cmd(f'curl -vv "http://{metallb_ip}:{metallb_port}"')
 
             with urlopen(f"http://{metallb_ip}:{metallb_port}/", timeout=1) as response:
