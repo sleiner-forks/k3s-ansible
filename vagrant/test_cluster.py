@@ -24,22 +24,25 @@ class TestK3sCluster(unittest.TestCase):
             cmd += " -o json"
         cmd += f" {args}"
 
-        result = subprocess.run(cmd, capture_output=True, shell=True)
-
-        # Catch errors
-        if result.stderr:
-            warn(f'Output of "{cmd}":\n{result.stderr}')
-        self.assertEqual(result.returncode, 0)
+        result = subprocess.run(cmd, capture_output=True, shell=True, check=True)
 
         if json_out:
             return json.loads(result.stdout)
         else:
             return None
 
-    def _debug_cmd(self, cmd) -> None:
-        print(f"--> {cmd}")
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        print(result.stdout.decode("utf-8"))
+    def _curl(self, url: str) -> str:
+        options = [
+            "--silent",  # no progress info
+            "--show-error",  # ... but errors should still be shown
+            "--fail",  # set exit code on error
+            "--location",  # follow redirects
+        ]
+        cmd = f'curl {" ".join(options)} "{url}"'
+
+        result = subprocess.run(cmd, capture_output=True, shell=True, check=True)
+        output = result.stdout.decode("utf-8")
+        return output
 
     def _apply_manifest(self, manifest_file: Path) -> dict:
         apply_result = self._kubectl(
@@ -102,13 +105,9 @@ class TestK3sCluster(unittest.TestCase):
         service = self._kubectl(f'get service "{service["metadata"]["name"]}"')
         metallb_port = service["spec"]["ports"][0]["port"]
 
-        def get_nginx_page():
-            self._debug_cmd(f'curl -vv "http://{metallb_ip}:{metallb_port}"')
-
-            with urlopen(f"http://{metallb_ip}:{metallb_port}/", timeout=1) as response:
-                return response.read().decode("utf8")
-
-        response_body = self._retry(get_nginx_page, retries=10, seconds_between_retries=3)
+        response_body = self._retry(
+            lambda: self._curl(f"http://{metallb_ip}:{metallb_port}/")
+        )
         self.assertIn("Welcome to nginx!", response_body)
 
 
