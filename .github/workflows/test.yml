@@ -16,6 +16,9 @@ jobs:
       VAGRANT_CWD: ${{ github.workspace }}/vagrant
 
     steps:
+      - name: route info
+        run: route get 192.168.30.80 && route get 192.168.56.80
+
       - name: Check out the codebase
         uses: actions/checkout@v2
 
@@ -59,6 +62,9 @@ jobs:
 
       - name: Show cluster pods
         run: kubectl describe -A pods
+
+      - name: route info
+        run: route get 192.168.30.80 && route get 192.168.56.80
 
       - name: Test cluster
         run: $VAGRANT_CWD/test_cluster.py --verbose --locals
