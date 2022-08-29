@@ -93,6 +93,8 @@ class TestK3sCluster(unittest.TestCase):
         metallb_ip = self._retry(
             lambda: self._get_load_balancer_ip(service["metadata"]["name"])
         )
+        # Now that an IP address was assigned, let's reload the service description:
+        service = self._kubectl(f'get service "{service["metadata"]["name"]}"')
         metallb_port = service["spec"]["ports"][0]["port"]
 
         def get_nginx_page():
