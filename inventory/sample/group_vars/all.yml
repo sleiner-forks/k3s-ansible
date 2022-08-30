@@ -17,10 +17,13 @@ apiserver_endpoint: "192.168.30.222"
 # this token should be alpha numeric only
 k3s_token: "some-SUPER-DEDEUPER-secret-password"
 
+# The IP on which the node is reachable in the cluster:
+k3s_node_ip: '{{ ansible_facts[flannel_iface]["ipv4"]["address"] }}'
+
 # these arguments are recommended for servers as well as agents:
 extra_args: >-
   --flannel-iface={{ flannel_iface }}
-  --node-ip={{ ansible_facts[flannel_iface]["ipv4"]["address"] }}
+  --node-ip={{ k3s_node_ip }}
 
 # change these to your liking, the only required one is --disable servicelb
 extra_server_args: >-

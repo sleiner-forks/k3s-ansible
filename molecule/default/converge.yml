@@ -1,3 +1,7 @@
 ---
+- name: Apply overrides
+  ansible.builtin.import_playbook: overrides.yml
+
 - name: Converge
   ansible.builtin.import_playbook: ../../site.yml
+  any_errors_fatal: true
