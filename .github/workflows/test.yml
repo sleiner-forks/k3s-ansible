@@ -48,7 +48,3 @@ jobs:
       - name: Delete old box versions
         if: always() # do this even if a step before has failed
         run: vagrant box prune --force
-
-      - name: Destroy virtual machines
-        if: always() # do this even if a step before has failed
-        run: vagrant destroy --force
