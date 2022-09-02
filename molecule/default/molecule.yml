@@ -65,7 +65,7 @@ scenario:
     - create
     - prepare
     - converge
-    # idempotence is not possible with the playbook in its current form
+    # idempotence is not possible with the playbook in its current form.
     - verify
     # We are repurposing side_effect here to test the reset playbook.
     # This is why we do not run it before verify (which tests the cluster),

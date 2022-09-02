@@ -1,5 +1,6 @@
 ---
-- block:
+- name: Deploy example
+  block:
     - name: "Create namespace: {{ testing_namespace }}"
       kubernetes.core.k8s:
         api_version: v1
@@ -36,11 +37,11 @@
           IP={{ nginx_service | json_query(metallb_ip) }},
           Port={{ nginx_sevice | json_query(metallb_port) }}
       vars: *load_balancer_metadata
-  # always:
-  #   - name: "Remove namespace: {{ testing_namespace }}"
-  #     kubernetes.core.k8s:
-  #       api_version: v1
-  #       kind: Namespace
-  #       name: "{{ testing_namespace }}"
-  #       state: absent
-  #       kubeconfig: "{{ kubecfg_path }}"
+  always:
+    - name: "Remove namespace: {{ testing_namespace }}"
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ testing_namespace }}"
+        state: absent
+        kubeconfig: "{{ kubecfg_path }}"

@@ -11,6 +11,10 @@ jobs:
     name: "molecule test"
     runs-on: macos-12
 
+    strategy:
+      matrix:
+        scenario:
+          - default
     env:
       PYTHON_VERSION: "3.10"
 
@@ -43,7 +47,7 @@ jobs:
           python3 -m pip install -r requirements.txt
 
       - name: Test with molecule
-        run: molecule test
+        run: molecule test --scenario-name ${{ matrix.scenario }}
 
       - name: Delete old box versions
         if: always() # do this even if a step before has failed
