@@ -9,6 +9,7 @@
         state: present
         wait: true
         kubeconfig: "{{ kubecfg_path }}"
+
     - name: Apply example manifests
       kubernetes.core.k8s:
         src: "{{ example_manifests_path }}/{{ item }}"
@@ -19,24 +20,30 @@
       with_items:
         - deployment.yml
         - service.yml
-    - name: Wait until a load balancer IP was assigned
+
+    - name: Get info about nginx service
       kubernetes.core.k8s_info:
         kind: service
         name: nginx
-        wait: true
-        wait_condition: "{{ foo }}"
+        namespace: "{{ testing_namespace }}"
+        kubeconfig: "{{ kubecfg_path }}"
       vars: &load_balancer_metadata
-        metallb_ip: .status.loadBalancer.ingress[0].ip
-        metallb_port: .spec.ports[0].port
-        foo: >-
-          jsonpath='{ .{{ metallb_ip }} }'
-      register: nginx_service
-    - name: Get web page served by nginx
-      ansible.builtin.debug:
-        msg: >
-          IP={{ nginx_service | json_query(metallb_ip) }},
-          Port={{ nginx_sevice | json_query(metallb_port) }}
-      vars: *load_balancer_metadata
+        metallb_ip: status.loadBalancer.ingress[0].ip
+        metallb_port: spec.ports[0].port
+      register: nginx_services
+
+    - name: Assert that the nginx welcome page is available
+      ansible.builtin.uri:
+        url: http://{{ ip }}:{{ port }}/
+        return_content: yes
+      register: result
+      failed_when: "'Welcome to nginx!' not in result.content"
+      vars:
+        ip: >-
+          {{ nginx_services.resources[0].status.loadBalancer.ingress[0].ip }}
+        port: >-
+          {{ nginx_services.resources[0].spec.ports[0].port }}
+
   always:
     - name: "Remove namespace: {{ testing_namespace }}"
       kubernetes.core.k8s:

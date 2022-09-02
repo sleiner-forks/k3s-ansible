@@ -1,7 +1,7 @@
 ---
 - name: Verify
   run_once: true
-  delegate_to: localhost
+  delegate_to: "{{ outside_host }}"
   block:
     - ansible.builtin.import_tasks: kubecfg-fetch.yml
     - name: "TEST CASE: Get nodes"

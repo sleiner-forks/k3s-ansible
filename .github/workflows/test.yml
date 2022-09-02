@@ -7,8 +7,8 @@ name: Test
       - master
 
 jobs:
-  molecule-test:
-    name: "molecule test"
+  molecule:
+    name: Molecule
     runs-on: macos-12
 
     strategy:
