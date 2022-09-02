@@ -1,0 +1,46 @@
+---
+- block:
+    - name: "Create namespace: {{ testing_namespace }}"
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ testing_namespace }}"
+        state: present
+        wait: true
+        kubeconfig: "{{ kubecfg_path }}"
+    - name: Apply example manifests
+      kubernetes.core.k8s:
+        src: "{{ example_manifests_path }}/{{ item }}"
+        namespace: "{{ testing_namespace }}"
+        state: present
+        wait: true
+        kubeconfig: "{{ kubecfg_path }}"
+      with_items:
+        - deployment.yml
+        - service.yml
+    - name: Wait until a load balancer IP was assigned
+      kubernetes.core.k8s_info:
+        kind: service
+        name: nginx
+        wait: true
+        wait_condition: "{{ foo }}"
+      vars: &load_balancer_metadata
+        metallb_ip: .status.loadBalancer.ingress[0].ip
+        metallb_port: .spec.ports[0].port
+        foo: >-
+          jsonpath='{ .{{ metallb_ip }} }'
+      register: nginx_service
+    - name: Get web page served by nginx
+      ansible.builtin.debug:
+        msg: >
+          IP={{ nginx_service | json_query(metallb_ip) }},
+          Port={{ nginx_sevice | json_query(metallb_port) }}
+      vars: *load_balancer_metadata
+  # always:
+  #   - name: "Remove namespace: {{ testing_namespace }}"
+  #     kubernetes.core.k8s:
+  #       api_version: v1
+  #       kind: Namespace
+  #       name: "{{ testing_namespace }}"
+  #       state: absent
+  #       kubeconfig: "{{ kubecfg_path }}"

@@ -46,6 +46,10 @@ platforms:
         ip: 192.168.30.42
 provisioner:
   name: ansible
+  playbooks:
+    converge: ../resources/converge.yml
+    side_effect: ../resources/reset.yml
+    verify: ../resources/verify.yml
   inventory:
     links:
       group_vars: ../../inventory/sample/group_vars
@@ -62,7 +66,10 @@ scenario:
     - prepare
     - converge
     # idempotence is not possible with the playbook in its current form
-    - side_effect
     - verify
+    # We are repurposing side_effect here to test the reset playbook.
+    # This is why we do not run it before verify (which tests the cluster),
+    # but after the verify step.
+    - side_effect
     - cleanup
     - destroy

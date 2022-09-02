@@ -1,0 +1,6 @@
+---
+- name: Apply overrides
+  ansible.builtin.import_playbook: overrides.yml
+
+- name: Reset
+  ansible.builtin.import_playbook: ../../reset.yml

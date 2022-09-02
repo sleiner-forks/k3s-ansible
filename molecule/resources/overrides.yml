@@ -4,4 +4,5 @@
   tasks:
     - name: Override host variables
       ansible.builtin.set_fact:
+        # See: https://github.com/flannel-io/flannel/blob/67d603aaf45ef80f5dd39f43714fc5e6f8a637eb/Documentation/troubleshooting.md#Vagrant
         flannel_iface: eth1
