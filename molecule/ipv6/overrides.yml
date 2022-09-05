@@ -1,6 +1,6 @@
 ---
 - name: Apply overrides
-  hosts: all,!ignore
+  hosts: all
   tasks:
     - name: Override host variables (1/2)
       ansible.builtin.set_fact:
