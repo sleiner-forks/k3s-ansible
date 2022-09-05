@@ -37,8 +37,6 @@ provisioner:
   inventory:
     links:
       group_vars: ../../inventory/sample/group_vars
-  env:
-    ANSIBLE_CONFIG: $MOLECULE_PROJECT_DIRECTORY/ansible.cfg
 scenario:
   test_sequence:
     - dependency
