@@ -83,9 +83,11 @@
 - name: Apply metallb CRs
   command: >-
     k3s kubectl apply -f /tmp/k3s/metallb-crs.yaml
+  register: this
   changed_when: false
-  with_items: "{{ groups['master'] }}"
   run_once: true
+  until: this.rc == 0
+  retries: 5
 
 - name: Test metallb-system IPAddressPool
   command: >-
@@ -101,7 +103,7 @@
   with_items: "{{ groups['master'] }}"
   run_once: true
 
-- name: Remove tmp director used for manifests
+- name: Remove tmp directory used for manifests
   file:
     path: /tmp/k3s
     state: absent
