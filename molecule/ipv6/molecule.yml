@@ -38,7 +38,6 @@ provisioner:
     links:
       group_vars: ../../inventory/sample/group_vars
   env:
-    OVERRIDES_FILE: ../ipv6/overrides.yml
     ANSIBLE_CONFIG: $MOLECULE_PROJECT_DIRECTORY/ansible.cfg
 scenario:
   test_sequence:
