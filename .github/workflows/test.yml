@@ -54,6 +54,7 @@ jobs:
       - name: Test with molecule
         run: molecule test --scenario-name ${{ matrix.scenario }}
         env:
+          ANSIBLE_K3S_IGNORE_UNREACHABLE_ON_RESET: "true"
           ANSIBLE_K3S_LOG_DIR: ${{ runner.temp }}/logs/k3s-ansible/${{ matrix.scenario }}
 
       - name: Upload log files

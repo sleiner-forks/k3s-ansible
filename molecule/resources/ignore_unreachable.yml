@@ -1,0 +1,15 @@
+---
+- name: Check if host is available
+  ansible.builtin.ping:
+  register: host_availability
+  ignore_errors: true
+  ignore_unreachable: true
+
+- name: Ignore unreachable hosts
+  ansible.builtin.add_host:
+    name: "{{ item }}"
+    groups: ignore
+  with_items: "{{ dict(hostvars) | community.general.json_query(unreachable_hosts) }}"
+  vars:
+    unreachable_hosts: values(@)[?(host_availability.ping != `pong`)].inventory_hostname
+  changed_when: false
